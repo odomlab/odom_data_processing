@@ -1,0 +1,11 @@
+Package: FastQCReport
+Version: 0.0.4
+Date: 2016-05-16
+Title: Generating reports from FastQC data
+Description: This package provides functions used to generate user-friendly reports from FastQC-generated summary data files.
+Author: Tim F. Rayner
+Maintainer: Tim F. Rayner <tfrayner@gmail.com>
+Depends: R (>= 2.15.1)
+Imports: ggplot2, reshape2, RColorBrewer, snow
+License: GPL (>= 2)
+

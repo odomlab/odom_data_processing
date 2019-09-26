@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<config>
+  <section name="Host">
+    <option name="user">fnc-odompipe</option>
+    <option name="datahost">uk-cri-lsrv01</option>
+    <option name="group">dolab</option>
+    <option name="defaultproject">all</option>
+    <option name="communicationhost">dolab-srv003</option>
+  </section>
+  <section name="Cluster">
+    <option name="clustertype">SLURM</option> <!-- currently, 'LSF' and 'SLURM' are supported -->
+    <option name="cluster">10.20.236.46</option>
+    <option name="clusterport">22</option>
+    <option name="clusteruser">fnc-odompipe</option>
+    <option name="clusterstdoutdir">/mnt/scratchb/dolab/fnc-odompipe/pipeline/stdout</option>
+    <option name="clusterworkdir">/mnt/scratchb/dolab/fnc-odompipe/pipeline/tmp</option>
+    <option name="clusterpath">/home/fnc-odompipe/production/bin:/home/fnc-odompipe/software/external/bin:/home/fnc-odompipe/software/CRI/bin:/usr/local/bin:/usr/bin:/bin</option>
+    <option name="clustergenomedir">/mnt/scratchb/dolab/fnc-odompipe/genomes</option>
+    <option name="clusterqueue">general</option>
+    <option name="splitbwarunlog">/mnt/scratchb/dolab/fnc-odompipe/pipeline/log/cs_runBwaWithSplit_fnc-odompipe.log</option>
+<!-- Uncomment the following in case data transfers to and from the node should go through a specific node, e.g. as in CI LSF cluster
+    <option name="transferhost">10.20.236.46</option> -->
+<!-- Uncomment the following and set it if it differs at all from clusterworkdir:
+    <option name="transferdir">/lustre/dolab/fnc-odompipe/pipeline/tmp/</option> -->
+  </section>
+<!-- Uncomment the following and set appropriately if the main compute cluster is out of action. -->
+<!--
+  <section name="AlternativeAlignmentHost">
+    <option name="althost">magellan.cri.camres.org</option>
+    <option name="althostport">22</option>
+    <option name="althostuser">rayner01</option>
+    <option name="althostpath">/usr/local/bin:/usr/bin/:/bin</option>
+    <option name="althostworkdir">/Users/rayner01/Scratch_Area/production_pipeline_area</option>
+    <option name="althostgenomedir">/Users/rayner01/Scratch_Area/genomes</option>
+    <option name="althostnumthreads">10</option>
+    <option name="althostsshkey">/Users/rayner01/.ssh/id_rsa_open</option>
+  </section>
+-->
+  <section name="Processing">
+    <option name="num_threads">40</option> <!-- number of threads used per alignment job -->
+    <option name="num_threads_sort">4</option> <!-- number of threads used for bam file sorting -->
+    <option name="clustermem">100000</option> <!-- note that the mem required is not necessarily proportional to the number of threads. For 1-4 threads, 8GB (i.e. 8000MB) is in most cases more than sufficient -->
+    <option name="clustersortmem">40000</option> <!-- Memory in MB part of clustermem that can be used for samtools sorting. -->
+    <option name="compressintermediates">False</option>
+  </section>
+  <section name="Lims">
+    <option name="lims_rest_uri">https://genomicsequencing.cruk.cam.ac.uk/glsintapi</option>
+  </section>
+  <section name="Path">
+    <option name="gzsuffix">.gz</option>
+    <option name="httptmpdir">/var/www/html/chipseq/tmp</option>
+    <option name="httptmpurl">/chipseq/tmp</option>
+    <option name="incoming">/data01/incoming</option>
+    <option name="repositorydir">/data02/repository</option>
+    <option name="hostpath">/home/fnc-odompipe/production/bin:/home/fnc-odompipe/software/CRI/bin:/home/fnc-odompipe/software/external/bin:/sw/gentoo/bin:/sw/gentoo/usr/bin:/sw/local/bin</option>
+    <option name="genomesizedir">/data02/genomes/chromosome_sizes</option>
+    <option name="tmpdir">/data01/tmp</option>
+    <option name="default_archive">ark</option> <!-- matches an ArchiveLocation.name -->
+  </section>
+  <section name="Pipeline">
+    <option name="aligner">bwa</option>
+    <option name="meminbytes">20000000000</option>
+    <option name="read_reallocator">reallocateReads</option>
+    <option name="read_sorter">samtools</option>
+    <option name="nonuniquereads">30</option>
+    <option name="reallocation_factors">
+      <value>PolIII</value>
+      <value>RNAP3</value>
+      <value>TFIIIC</value>
+    </option>
+    <option name="nonquant_libtypes"><!-- Libtypes for which wig/bgr/bw file creation is inappropriate. -->
+      <value>bisulph-smrna</value>
+      <value>genome</value>
+      <value>exome</value>
+    </option>
+    <option name="core_facility_code">CRI</option>
+    <option name="core_ready_status">core pipeline complete</option>
+  </section>
+  <section name="Sanger">
+    <option name="sanger_lims_url">http://npg.sanger.ac.uk/perl/npg/run</option>
+    <option name="sanger_http_proxy">http://localhost:3128/</option>
+    <option name="sanger_project_names"> <!-- Unused? I think we use the owners info instead. FIXME -->
+      <value>A method for automated High throughput ChIPseq</value>
+      <value>High resolution analysis of the mammalian regulatory landscape</value>
+    </option>
+    <option name="sanger_instruments">
+      <value>HiSeq</value>
+      <value>GAII</value>
+    </option>
+    <option name="sanger_facility_code">SAN</option>
+    <!-- Sanger status flags may run through this ready status to "qc
+         complete". Currently unused, but this may change. -->
+    <option name="sanger_ready_status">run archived</option>
+    <option name="sanger_project_owners">
+      <value>do3</value> <!-- This is Duncan's login ID at Sanger. -->
+    </option>
+  </section>
+  <section name="Email">
+    <option name="smtp_server">smtp.cri.camres.org</option>
+    <option name="smtp_sender">fnc-odompipe@uk-cri-lsrv01.cri.camres.org</option>
+  </section>
+  <section name="ControlledVocabs"> <!-- Site-specific addenda -->
+    <option name="genome_synonyms">
+      <option name="Amex">ame</option>
+      <option name="Cfam">canFam3</option>
+      <option name="Cjac">calJac3</option>
+      <option name="Ggal">galGal4</option>
+      <option name="Ggor">gorGor3</option>
+      <option name="Hsap">hg19</option>
+      <option name="Mcas">CAST_Apr2015</option>
+      <option name="Mdom">monDom5</option>
+      <option name="Mmul">rheMac3</option>
+      <option name="Mmus">mm10</option>
+      <option name="Mspr">msp</option>
+      <option name="Ocun">oryCun2</option>
+      <option name="Pham">papHam1</option>
+      <option name="Ppyg">ppy</option>
+      <option name="Ptro">panTro4</option>
+      <option name="Rnor">rn5</option>
+      <option name="Xtro">xtr</option>
+      <option name="C3H">C3HHeJ_Apr2015</option>
+      <option name="Caroli">musCar_Apr2015</option>
+    </option>
+  </section>
+  <section name="HCCPipeline">
+    <option name="gatk_cluster_input">/mnt/scratchb/dolab/fnc-odompipe/pipeline/gatk_input</option>
+    <option name="gatk_cluster_output">/mnt/scratchb/dolab/fnc-odompipe/pipeline/gatk_output</option>
+    <option name="gatk_cluster_root">/home/fnc-odompipe/software/CRI/gatk-pipeline-0.4.2</option>
+    <option name="gatk_cluster_java_home">/home/fnc-odompipe/software/external/java/jre1.7.0_05</option>
+    <!-- Directories relative to repositorydir in which merged aligned
+         bam files and histology images are stored -->
+    <option name="merged_alignments_dir">merged_alignments</option>
+    <option name="histology_image_dir">histology_images</option>
+  </section>
+  <!-- Section Edinburgh contains values necessary for data download from <user>@edgen-dt.rdf.ac.uk:<project>/<destination> -->  
+  <section name="Edinburgh">
+    <!-- ascp -P 33001 -O 33001 -l 500M <user>@edgen-dt.rdf.ac.uk:<project>/ <destination> -->
+    <!-- ascp -P <aport> -O <oport> -l <arate> <auser>@<ahost>:<project>/<destination> of which project and local destination are provided by Edinburgh -->
+    <!-- The values above have been taken from https://genomics.ed.ac.uk/download-help-clinical -->
+    <option name="auser">dolab</option>
+    <option name="ahost">edgen-dt.rdf.ac.uk</option>
+    <option name="apport">33001</option>
+    <option name="aoport">33001</option>
+    <option name="arate">500M</option>
+    <option name="athreads">10</option>
+  </section>
+</config>

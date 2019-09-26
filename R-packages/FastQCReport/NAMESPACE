@@ -1,0 +1,9 @@
+importFrom(grDevices, colorRampPalette)
+importFrom(graphics, legend, matplot, plot.new)
+importFrom(stats, complete.cases, density, dnorm, lm, median)
+
+importFrom(ggplot2, ggplot, geom_line, scale_color_manual, labs, aes_string, scale_y_continuous)
+importFrom(reshape2, melt)
+importFrom(RColorBrewer, brewer.pal)
+
+exportPattern("^[[:alpha:]]+")

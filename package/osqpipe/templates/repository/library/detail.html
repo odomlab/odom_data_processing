@@ -1,0 +1,150 @@
+{% extends "repository/base.html" %}
+
+{% load sortby %}
+
+{% load humanize %}
+
+{% load to_class_name %}
+
+{% block title %} Library {{ library }} Summary {% endblock %}
+
+{% block content %}
+<div class="library">
+{% if library %}
+
+  <div class="librarydetail">
+  <div class="project_picker">
+    <form action="" method="post">{% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Change"/>
+      <input type="reset" value="Reset"/>
+      <h6>* = read-only projects</h6>
+    </form>
+  </div>
+
+  <div class="library_table">
+  <form action="{% url "library-edit" slug=library.code %}">
+  <table class="horizontal">
+    <tr><th>Library code: </th><td>{{ library.code }}</td></tr>
+    <tr><th>Requested Genome: </th>
+      <td>{% with gen=library.genome %}
+        {{ gen }} (<i>{{ gen.species.scientific_name }}</i>; {{ gen.species.common_name }}; version: {{ gen.version }})
+        {% endwith %}</td></tr>
+    <tr><th>Strain: </th><td>{{ library.sample.source.strain }}</td></tr>
+    <tr><th>Tissue: </th><td>{{ library.sample.tissue }}</td></tr>
+    <tr><th>Sex: </th><td>{{ library.sample.source.sex }}</td></tr>
+    <tr><th>Antibody: </th><td>{{ library.antibody }}</td></tr>
+    <tr><th>Individual: </th><td>{% if library.code == library.sample.source.name %}&nbsp;
+        {% else %}{{ library.sample.source.name }}{% if library.sample.source.species %}&nbsp;(<i>{{library.sample.source.species}}</i>){% endif %}
+	<br/>(sample <a href="{% url "sample-detail" pk=library.sample.pk %}">{{ library.sample.name }}</a>){% endif %}</td></tr>
+    <tr><th>Factor: </th><td>{{ library.factor }}</td></tr>
+    <tr><th>Condition: </th><td>{{ library.condition }}</td></tr>
+    <tr><th>Library type: </th><td>{{ library.libtype }}</td></tr>
+    <tr><th>Barcode: </th><td>{{ library.barcode }}</td></tr>
+    <tr><th>Linkerset: </th><td>{{ library.linkerset }}</td></tr>
+    <tr><th>Adapter: </th><td>{{ library.adapter }}{% if library.adapter %} (sequence: {{ library.adapter.sequence }}){% endif %}</td></tr>
+    <tr><th>Adapter2: </th><td>{{ library.adapter2 }}{% if library.adapter2 %} (sequence: {{ library.adapter2.sequence }}){% endif %}</td></tr>
+    <tr><th>Experiment: </th><td>{{ library.chipsample }}</td></tr>
+    <tr><th>Single or Paired-End: </th><td>
+        {% if library.lane_set.all.count > 0 %}
+        lanes:{% for lane in library.lane_set.all %} {{ lane.paired|yesno:"PE,SE" }}{% endfor %}
+        {% else %}{{ library.paired|yesno:"PE,SE" }}{% endif %}
+    </td></tr>
+    <tr><th>Notes: </th><td>{{ library.comment }}</td></tr>
+    <tr><th>Library failed: </th><td>{{ library.bad|yesno }}</td></tr>
+  </table>
+  <input type="submit" value="Edit Notes"/>
+  </form>
+  </div>
+  </div>
+
+  <h2>Sequencing Lanes</h2>
+
+  <div class="seqlane_list">
+  {% if library.lane_set.all.count > 0 %}
+  <table class="fullwidth">
+    <tr>
+      <th>Lane</th>
+      <th>Facility</th>
+      <th>Flowcell ID</th>
+      <th>Flowlane</th>
+      <th>Genomics ID</th>
+      <th>Genomics Run No.</th>
+      <th>Run Date</th>
+      <th>Reads Passed PF</th>
+      <th>LIMS Summary</th>
+    </tr>
+
+    {% for lane in library.lane_set.all|sortby:"name" %}  
+      <tr>
+        <th><a href="{% url "lane-detail" pk=lane.pk %}">{{ lane.name }}</a></th>
+        <td>{{ lane.facility.name }}</td>
+        <td>{{ lane.flowcell }}</td>
+        <td>{{ lane.flowlane }}</td>
+        <td>{{ lane.genomicssampleid }}</td>
+        <td>{{ lane.runnumber }}</td>
+        <td>{{ lane.rundate }}</td>
+        <td>{{ lane.total_passedpf|intcomma }}</td>
+        <td>{% if lane.summaryurl %}
+       <a href="{{lane.summaryurl}}">{{lane.machine}}_{{lane.flowcell}}_s_{{lane.flowlane}}</a>
+          {% endif %}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+    No Sequencing Lanes found.
+  {% endif %}
+  </div>
+
+  <h2>Multi-Library Merged Alignments</h2>
+
+  <div class="mergedaln_list">
+  {% if merged_alignments.count > 0 %}
+
+  {% for maln in merged_alignments|sortby:"genome" %}
+    <div class="mergedaln">
+    <table class="horizontal">
+      <tr><th>Aligned Genome: </th>      <td>{% with gen=maln.genome %}
+        {{ gen }} (<i>{{ gen.species.scientific_name }}</i>; {{ gen.species.common_name }}; version: {{ gen.version }})
+        {% endwith %}</td></tr>
+      <tr><th>Lanes Included in Merge: </th><td>
+          {% for aln in maln.alignments.all|sortby:"lane.name" %}{{ aln.lane }} {% endfor %}</td></tr>
+    </table>
+
+    {% with files=maln.mergedalnfile_set.all|sortby:"filetype.name" %}
+      {% include "repository/file_table.html" %}
+    {% endwith %}
+    </div>
+    
+    {% endfor %}
+  {% else %}
+    <div class="mergedaln">
+    No Merged Alignments found.
+    </div>
+  {% endif %}
+  </div>
+
+  <h2>Histology Images</h2>
+  <div class="histologyimages">
+  {% if histology_images.count > 0 %}
+    {% with files=histology_images|sortby:"filetype.name" %}
+      {% include "repository/file_table.html" %}
+    {% endwith %}
+    {% for file in histology_images %}
+      {% if file.filetype.code == 'jpg' %}
+         <a href="{% url "file-download" cls=file|to_class_name|lower pk=file.pk %}">
+           <img src="{% url "file-download" cls=file|to_class_name|lower pk=file.pk %}"
+                width="300" alt="{{ file.filename }}"/>
+	 </a>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    No Histology Images found.
+  {% endif %}
+  </div>
+	 
+{% else %}
+  <p>No library provided.</p>
+{% endif %}
+</div>
+{% endblock %}    

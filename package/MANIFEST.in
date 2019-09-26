@@ -1,0 +1,6 @@
+include README.rst
+include LICENCE.txt
+recursive-include osqpipe/static *
+recursive-include osqpipe/templates *
+recursive-include docs *
+include osqpipe/pipeline/fastqc_pdf_styles.css

@@ -1,0 +1,32 @@
+{% extends "repository/base.html" %}
+
+{% block title %} Genomes List {% endblock %}
+
+{% block content %}
+
+  <span><a href="{% url "default-genome-list" %}">Default Genome codes</a></span>
+
+  {% include "repository/simple_search_form.html" %}
+
+  {% if genomes %}
+    <table class="fixed-widths">
+      <tr>
+        <th>Common name</th>
+        <th>Code</th>
+        <th>Scientific name</th>
+        <th>Version</th>
+      </tr>
+    {% for gen in genomes %}
+      <tr>
+        <td>{{ gen.species.common_name }}</td>
+        <td>{{ gen.code }}</td>
+        <td><i>{{ gen.species.scientific_name }}</i></td>
+        <td>{{ gen.version }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+    {% include "repository/list_pagination.html" %}
+  {% else %}
+    <p>No genomes found.</p>
+  {% endif %}
+{% endblock %}    
