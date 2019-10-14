@@ -2,19 +2,15 @@ Bootstrap: docker
 From:	centos:6
 
 %environment
+	export PYTHONUSERBASE=/usr/local/admin/git-repo
 	export PATH=$PATH:/usr/pgsql-9.6/bin
 	export HTSLIB_LIBRARY_DIR=/usr/local/lib
 	export HTSLIB_INCLUDE_DIR=/usr/local/include
-	export PYTHONUSERBASE=/usr/local/admin/git-repo
 	export PYTHON_EGG_CACHE=/tmp/Python-Eggs
 	export PIP_DOWNLOAD_CACHE=/tmp/Python-pip-downloads
 	export LD_LIBRARY_PATH=/usr/local/lib
-	function wstart { /usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -D DEFAULT_VHOST -D INFO -D LANGUAGE -D XSENDFILE -D STATUS -D WSGI -D SSL -D SSL_DEFAULT_VHOST -k start; }
-	function wstop  { /usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -k stop; }
 
 %post
-	export REPO_HOST=dolab-srv003.cri.camres.org
-	export REPO_USER=fnc-odompipe
 	export PYTHONUSERBASE=/usr/local/admin/git-repo
 	export PATH=$PATH:/usr/pgsql-9.6/bin
 	export HTSLIB_LIBRARY_DIR=/usr/local/lib
@@ -24,7 +20,7 @@ From:	centos:6
 	export LD_LIBRARY_PATH=/usr/local/lib
 
 	#
-	# Need EL for correct postgres, EPEL for mod_xsendfile, IUS for other odds and ends
+	# Need EL for correct postgres, EPEL for mod_xsendfile, IUS for other odds and ends.
 	#
 	yum localinstall -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	yum localinstall -y https://download.fedoraproject.org/pub/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
@@ -43,40 +39,40 @@ From:	centos:6
 	pip2.7 install "django==1.8.7"
 
 	#
-	# note: python27-mod_wsgi is incompatible with httpd24u, so cannot be installed via yum.
+	# Note that python27-mod_wsgi is incompatible with httpd24u, so cannot be installed via yum.
+	# Instead we just install with pip.
 	#
 	pip2.7 install mod_wsgi numpy
 	mod_wsgi-express module-config > /etc/httpd/conf.modules.d/01-wsgi.conf
 
 	#
-	#  gnuplot-py 1.8 is no longer available via pypi, hence retrieving from sourceforge
+	# Package gnuplot-py-1.8 is no longer available via pypi, hence we retrieve from sourceforge.
 	#
 	wget -O gnuplot-py.zip https://sourceforge.net/projects/gnuplot-py/files/latest/download
 	unzip gnuplot-py.zip
 	(cd gnuplot-py-1.8; python2.7 setup.py install)
 
 	#
-	# htslib is not available as a yum package in Centos 6.
+	# htslib is not available as a yum package in Centos 6, so we must install separately.
 	#
-	wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
-	tar xf htslib-1.9.tar.bz2
+	# Note that wget of htslib from GitHub is currently failing most of the time, so
+	# there must be a copy in the directory where the build takes place.  (See the "%files" 
+	# section below.)  If/when 
+	# the downloads work reliably, you can remove that requirement, and replace
+	# the tar command following with the wget and tar commands here:
+#	wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
+#	tar xf htslib-1.9.tar.bz2
+	tar xf /tmp/htslib-1.9.tar.bz2
+	# At this point, it doesn't matter where it came from; we just have to build and install:
 	(cd htslib-1.9; ./configure; make; make install)
 
 	#
-	# have to install pysam after htslib.
+	# Install pysam; this must be done after htslib is available.
 	#
 	pip2.7 install pysam
 
 	#
-	# set ssh key so we can retrieve stuff from Odom-lab repo
-	#
-#	mkdir -p /root/.ssh
-#	mv /tmp/${REPO_USER}-key /root/.ssh/id_rsa
-#	chmod 700 /root/.ssh
-#	chmod 600 /root/.ssh/id_rsa
-
-	#
-	# custom httpd.conf for WSGI setup
+	# Install custom httpd.conf for WSGI setup.
 	#
 	mv /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.orig
 	mv /tmp/httpd.conf /etc/httpd/conf
@@ -85,8 +81,6 @@ From:	centos:6
 	# Now get the actual osqpipe stuff, and install it.
 	#
 	mkdir -p /usr/local/admin/git-repo/trunk
-#	ssh-keyscan -H $REPO_HOST >> /root/.ssh/known_hosts # to add the repo to known_hosts, and avoid the authenticity prompt
-#	(cd /; git archive --remote="ssh://${REPO_USER}@${REPO_HOST}/usr/local/gitroot/cs_pipeline" --prefix=/usr/local/admin/git-repo/ master trunk/pipeline | tar x)
 	(cd /usr/local/admin/git-repo/trunk ; git clone https://github.com/odomlab/odom_data_processing.git pipeline )
 	mv /tmp/setup.py /usr/local/admin/git-repo/trunk/pipeline/package
 	(cd /usr/local/admin/git-repo/trunk/pipeline/util-package; python2.7 setup.py install)
@@ -94,18 +88,19 @@ From:	centos:6
 	mv /tmp/settings.py /usr/local/admin/git-repo/trunk/pipeline/django/cs_pipeline/settings.py
 
 	#
-	# set up links for CSS
+	# Set up links for CSS.
 	#
 	ln -s /usr/local/admin/git-repo/trunk/pipeline/package/osqpipe/static /var/www/html/django
 	ln -s /usr/lib64/python2.7/site-packages/django/contrib/admin/static/admin /var/www/html/django/admin
 
 	#
-	# to enable XSendFile
+	# Enable XSendFile.
 	#
 	echo 'XSendFile on' >> /etc/httpd/conf.modules.d/10-xsendfile.conf
 
 	#
-	# links for data repository
+	# Create links for the data repository, so no matter which archive the file is in now,
+	# at CRUK, the links will work at EBI, where everything is in one huge archive.
 	#
 	mkdir -p /data02/repository
 	mkdir -p /mnt/archive3/Groups/DOLab/fs04
@@ -120,11 +115,24 @@ From:	centos:6
 	ln -s /data02/repository /data04/repository
 	ln -s /data02/repository /nfs/leia/research/flicek/user/fnc-odompipe/respository
 
+	#
+	# Set up a couple of convenience commands to run and stop the Apache server.
+	# These are mostly useful when using 'singularity shell' to work in the container
+	# interactively. 'wstart' and 'wstop' start and stop the server.
+	#
+	echo $'#!/bin/bash\n/usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -D DEFAULT_VHOST -D INFO -D LANGUAGE -D XSENDFILE -D STATUS -D WSGI -D SSL -D SSL_DEFAULT_VHOST -k start' > /usr/bin/wstart
+	echo $'#!/bin/bash\n/usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -k stop' > /usr/bin/wstop
+	chmod +x /usr/bin/wstart /usr/bin/wstop
+
 %files
-	fnc-odompipe-key /tmp
 	httpd.conf /tmp
 	setup.py /tmp
 	settings.py /tmp
+	htslib-1.9.tar.bz2 /tmp
 
 %runscript
 	/usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -D DEFAULT_VHOST -D INFO -D LANGUAGE -D XSENDFILE -D STATUS -D WSGI -D SSL -D SSL_DEFAULT_VHOST -k start
+	#
+	# Use the following command to stop the server.
+	#
+	#/usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -k stop
