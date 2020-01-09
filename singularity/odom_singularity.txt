@@ -22,9 +22,9 @@ From:	centos:6
 	#
 	# Need EL for correct postgres, EPEL for mod_xsendfile, IUS for other odds and ends.
 	#
-	yum localinstall -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-	yum localinstall -y https://download.fedoraproject.org/pub/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
-	yum install -y https://$(rpm -E '%{?centos:centos}%{!?centos:rhel}%{rhel}').iuscommunity.org/ius-release.rpm
+	yum localinstall -y ttps://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+	yum localinstall -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
+	yum install -y https://repo.ius.io/ius-release-el7.rpm 
 	yum update -y
 	yum install -y git httpd24u httpd24u-devel postgresql96 postgresql96-devel \
                    which httpd24u-mod_xsendfile openssl-devel openldap-devel \
