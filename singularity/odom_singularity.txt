@@ -91,7 +91,7 @@ From:	centos:6
 	# Set up links for CSS.
 	#
 	ln -s /usr/local/admin/git-repo/trunk/pipeline/package/osqpipe/static /var/www/html/django
-	ln -s /usr/lib64/python2.7/site-packages/django/contrib/admin/static/admin /var/www/html/django/admin
+	ln -s /usr/lib/python2.7/site-packages/django/contrib/admin/static/admin /var/www/html/django/admin
 
 	#
 	# Enable XSendFile.
