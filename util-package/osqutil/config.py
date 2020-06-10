@@ -126,8 +126,8 @@ class Config(object):
       if not conffile:
         thisdir  = os.path.dirname( os.path.realpath( __file__ ) )
         conffile = os.path.join(thisdir, 'config', confname)
-        LOGGER.warning("Site configuration file not found."
-                       + " Falling back to package config %s.", conffile)
+#        LOGGER.warning("Site configuration file not found."
+#                       + " Falling back to package config %s.", conffile)
     if not os.path.exists(conffile):
       LOGGER.error("Configuration file not found (%s).", conffile)
 
