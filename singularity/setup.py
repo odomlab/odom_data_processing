@@ -56,10 +56,10 @@ setup(
     #'gnuplot-py', # N.B. package not on PyPI, so can't be auto-installed.
     #'numpy<=1.15',
     'requests',
-    'beautifulsoup4',
+    'beautifulsoup4<4.7',
     'lxml', 
     'xlrd',       # Excel spreadsheet support.
-    'markdown',   # REST browseable API support
+    'markdown<3.0',   # REST browseable API support
   ],
   zip_safe=False,  # Prevents zipping of the installed egg, important for accessing django templates.
 )

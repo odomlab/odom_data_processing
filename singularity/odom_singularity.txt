@@ -24,7 +24,6 @@ From:	centos:6
 	#
 	yum localinstall -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-6-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	yum localinstall -y https://download.fedoraproject.org/pub/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
-#	yum install -y https://$(rpm -E '%{?centos:centos}%{!?centos:rhel}%{rhel}').iuscommunity.org/ius-release.rpm
 	yum install -y https://repo.ius.io/ius-release-el6.rpm 
 	yum update -y
 	yum install -y git httpd24u httpd24u-devel postgresql96 postgresql96-devel \
@@ -58,13 +57,9 @@ From:	centos:6
 	#
 	# Note that wget of htslib from GitHub is currently failing most of the time, so
 	# there must be a copy in the directory where the build takes place.  (See the "%files" 
-	# section below.)  If/when 
-	# the downloads work reliably, you can remove that requirement, and replace
-	# the tar command following with the wget and tar commands here:
-#	wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
-#	tar xf htslib-1.9.tar.bz2
-	tar xf /tmp/htslib-1.9.tar.bz2
-	# At this point, it doesn't matter where it came from; we just have to build and install:
+	# section below.)
+	wget https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2
+	tar xf htslib-1.9.tar.bz2
 	(cd htslib-1.9; ./configure; make; make install)
 
 	#
@@ -87,6 +82,13 @@ From:	centos:6
 	(cd /usr/local/admin/git-repo/trunk/pipeline/util-package; python2.7 setup.py install)
 	(cd /usr/local/admin/git-repo/trunk/pipeline/package; python2.7 setup.py install)
 	mv /tmp/settings.py /usr/local/admin/git-repo/trunk/pipeline/django/cs_pipeline/settings.py
+	chgrp -R apache /usr/local/admin/git-repo/trunk/pipeline/django
+
+	#
+	# ensure django log is writable
+	#
+	touch /tmp/django_log.txt
+	chmod 777 /tmp/django_log.txt
 
 	#
 	# Set up links for CSS.
@@ -129,10 +131,10 @@ From:	centos:6
 	httpd.conf /tmp
 	setup.py /tmp
 	settings.py /tmp
-	htslib-1.9.tar.bz2 /tmp
 
 %runscript
-	/usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -D DEFAULT_VHOST -D INFO -D LANGUAGE -D XSENDFILE -D STATUS -D WSGI -D SSL -D SSL_DEFAULT_VHOST -k start
+	/usr/bin/wstart
+	#/usr/sbin/httpd -f /etc/httpd/conf/httpd.conf -D DEFAULT_VHOST -D INFO -D LANGUAGE -D XSENDFILE -D STATUS -D WSGI -D SSL -D SSL_DEFAULT_VHOST -k start
 	#
 	# Use the following command to stop the server.
 	#

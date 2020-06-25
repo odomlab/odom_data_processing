@@ -19,8 +19,7 @@ DATABASES = {
         'NAME'     : 'chipseq',
         'USER'     : 'chipseq',
         'PASSWORD' : 'XXXXXXXX',
-        'HOST'     : 'dolab-srv003.cri.camres.org', # set to use tunnel from EBI back to CI
-        'PORT'     : '', # port to tunnel
+        'HOST'     : 'dolab-srv006.cri.camres.org', # set to use tunnel from EBI back to CI
     }
 }
 
@@ -204,20 +203,20 @@ TEMPLATE_CONTEXT_PROCESSORS += ('django.core.context_processors.request',
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
-#AUTHENTICATION_BACKENDS += ('django_auth_ldap.backend.LDAPBackend',)
+AUTHENTICATION_BACKENDS += ('django_auth_ldap.backend.LDAPBackend',)
 
 # Allow LDAP authentication.
-#import ldap
-#from django_auth_ldap.config import LDAPSearch
+import ldap
+from django_auth_ldap.config import LDAPSearch
 
-#AUTH_LDAP_SERVER_URI = "ldap://dc.cri.camres.org:389"
+AUTH_LDAP_SERVER_URI = "ldap://dc.cri.camres.org:389"
 
 # The following gleaned from our Redmine installation. FIXME move
 # these out into our main pipeline config at some point.
-#AUTH_LDAP_BIND_DN       = "CRI\SVC-DOLabLDAP"
-#AUTH_LDAP_BIND_PASSWORD = "D59PJSZOicHwmnS5xXHV"
-#AUTH_LDAP_USER_SEARCH   = LDAPSearch("OU=CRI,OU=Accounts,DC=cri,DC=camres,DC=org",
-#                                     ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
+AUTH_LDAP_BIND_DN       = "CRI\SVC-DOLabLDAP"
+AUTH_LDAP_BIND_PASSWORD = "D59PJSZOicHwmnS5xXHV"
+AUTH_LDAP_USER_SEARCH   = LDAPSearch("OU=CRI,OU=Accounts,DC=cri,DC=camres,DC=org",
+                                     ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
 
 # Restrict connections to within the building for now.
 ALLOWED_HOSTS = ['*']
